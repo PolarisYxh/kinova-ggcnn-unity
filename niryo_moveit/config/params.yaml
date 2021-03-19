@@ -1,0 +1,5 @@
+ROS_IP: 127.0.0.1
+ROS_TCP_PORT: 10011
+UNITY_IP: 127.0.0.1
+UNITY_SERVER_PORT: 5005
+rosdistro: 'melodic'
