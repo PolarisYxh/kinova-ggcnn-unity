@@ -1,0 +1,10 @@
+<library path="lib/libmy_depth_image_proc">
+
+  <class name="my_depth_image_proc/convert_metric"
+	 type="my_depth_image_proc::ConvertMetricNodelet"
+	 base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet to convert raw uint16 depth image in mm to float depth image in m.
+    </description>
+  </class>
+</library>

@@ -4,7 +4,8 @@ import time
 
 import numpy as np
 import tensorflow as tf
-from keras.models import load_model
+from tensorflow.keras.models import load_model
+#from keras.models import load_model
 
 import cv2
 import scipy.ndimage as ndimage
@@ -16,11 +17,11 @@ from cv_bridge import CvBridge
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import Image, CameraInfo
 from std_msgs.msg import Float32MultiArray
-
+import sys
 bridge = CvBridge()
 
 # Load the Network.
-MODEL_FILE = 'PATH/TO/model.hdf5'
+MODEL_FILE = sys.path[0]+'/epoch_29_model.hdf5'
 model = load_model(MODEL_FILE)
 
 rospy.init_node('ggcnn_detection')
@@ -37,10 +38,11 @@ prev_mp = np.array([150, 150])
 ROBOT_Z = 0
 
 # Tensorflow graph to allow use in callback.
-graph = tf.get_default_graph()
+graph = tf.compat.v1.get_default_graph()
 
 # Get the camera parameters
-camera_info_msg = rospy.wait_for_message('/camera/depth/camera_info', CameraInfo)
+#camera_info_msg = rospy.wait_for_message('/camera/depth/camera_info', CameraInfo)
+camera_info_msg = rospy.wait_for_message('/camera/infra1/camera_info', CameraInfo)
 K = camera_info_msg.K
 fx = K[0]
 cx = K[2]
@@ -201,7 +203,8 @@ def depth_callback(depth_message):
         cmd_pub.publish(cmd_msg)
 
 
-depth_sub = rospy.Subscriber('/camera/depth/image_meters', Image, depth_callback, queue_size=1)
+#depth_sub = rospy.Subscriber('/camera/depth/image_meters', Image, depth_callback, queue_size=1)
+depth_sub = rospy.Subscriber('/camera/infra1/image_rect_raw', Image, depth_callback, queue_size=1)
 robot_pos_sub = rospy.Subscriber('/m1n6s200_driver/out/tool_pose', PoseStamped, robot_pos_callback, queue_size=1)
 
 while not rospy.is_shutdown():
