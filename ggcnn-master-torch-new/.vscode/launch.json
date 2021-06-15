@@ -1,0 +1,16 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["--description", "training_example", "--network", "ggcnn", "--dataset", "cornell", "--dataset-path", "./cornell-grasp"]//[ "--network", "ggcnn2_weights_cornell/epoch_50_cornell", "--dataset", "cornell", "--dataset-path", "./cornell-grasp", "--iou-eval","--vis"]
+        }
+    ]
+}
