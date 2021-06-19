@@ -32,10 +32,10 @@
   <joint name="camera_rack_joint" type="fixed">
     <child link="camera_rack_link" />
     <parent link="j2n6s300_link_6" />
-    <origin xyz="0 0 0.007" rpy="0 0 3.14159" />
+    <origin xyz="0 0 0.007" rpy="0 0 0" />
   </joint>
   <link name="camera_rack_link">
-    <!--visual>
+    <visual>
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
@@ -48,7 +48,7 @@
         <color
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
-    </visual-->
+    </visual>
   </link>
   <joint name="camera_joint" type="fixed">
     <child link="camera_link" />
@@ -56,7 +56,7 @@
     <origin xyz="0.1 0 -0.03" rpy="3.14159 0 1.5708" />
   </joint>
   <link name="camera_link">
-    <!--visual>
+    <visual>
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
@@ -69,7 +69,7 @@
         <color
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
-    </visual-->
+    </visual>
   </link>
   <xacro:property name="robot_root" value="root" />
 

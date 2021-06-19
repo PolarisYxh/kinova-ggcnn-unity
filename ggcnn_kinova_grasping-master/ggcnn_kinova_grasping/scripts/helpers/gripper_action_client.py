@@ -30,5 +30,5 @@ def set_finger_positions(finger_positions):
         rospy.WARN('        the gripper action timed-out')
         return None
 
-action_address = '/m1n6s200_driver/fingers_action/finger_positions'
+action_address = '/j2n6s300_driver/fingers_action/finger_positions'
 gripper_client = actionlib.SimpleActionClient(action_address, kinova_msgs.msg.SetFingersPositionAction)

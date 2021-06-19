@@ -15,7 +15,7 @@ from helpers.covariance import generate_cartesian_covariance
 
 from helpers.gripper_action_client import set_finger_positions
 from helpers.position_action_client import move_to_position
-
+import actionlib
 MAX_VELO_X = 0.25
 MAX_VELO_Y = 0.15
 MAX_VELO_Z = 0.085
@@ -76,7 +76,7 @@ def gripper_client(finger_positions):
 
     client = actionlib.SimpleActionClient(action_address,
                                           kinova_msgs.msg.SetFingersPositionAction)
-    client.wait_for_server()
+    #client.wait_for_server()
 
     goal = kinova_msgs.msg.SetFingersPositionGoal()
     goal.fingers.finger1 = float(finger_positions[0])
@@ -133,7 +133,7 @@ def command_callback(msg):
 
             # Calculate Pose of Grasp in Robot Base Link Frame
             # Average over a few predicted poses to help combat noise.
-            gp_base = convert_pose(gp, 'camera_depth_optical_frame', 'j2n6s300_link_base')
+            gp_base = convert_pose(gp, 'camera_depth_frame', 'j2n6s300_link_base')
             gpbo = gp_base.orientation
             e = tft.euler_from_quaternion([gpbo.x, gpbo.y, gpbo.z, gpbo.w])
             # Only really care about rotation about z (e[2]).
@@ -180,6 +180,7 @@ def command_callback(msg):
 
         vx = max(min(dx * 2.5, MAX_VELO_X), -1.0*MAX_VELO_X)
         vy = max(min(dy * 2.5, MAX_VELO_Y), -1.0*MAX_VELO_Y)
+        vy=0
         vz = max(min(dz - 0.04, MAX_VELO_Z), -1.0*MAX_VELO_Z)
 
         # Apply a nonlinearity to the velocity
@@ -193,7 +194,7 @@ def command_callback(msg):
         CURRENT_VELOCITY[3] = -1 * dp
         CURRENT_VELOCITY[4] = 1 * dr
         CURRENT_VELOCITY[5] = max(min(1 * dyaw, MAX_ROTATION), -1 * MAX_ROTATION)
-
+        print(CURRENT_VELOCITY)
 
 def robot_wrench_callback(msg):
     # Monitor force on the end effector, with some smoothing.
@@ -209,7 +210,7 @@ def finger_position_callback(msg):
     global GRIP_WIDTH_MM
 
     # Only move the fingers when we're 200mm from the table and servoing.
-    if CURR_Z < 0.200 and CURR_DEPTH > 80 and SERVO:
+    if CURR_Z < 0.1 and CURR_DEPTH > 80 and SERVO:
         # 4000 ~= 70mm
         g = min((1 - (min(GRIP_WIDTH_MM, 70)/70)) * (6800-4000) + 4000, 5500)
 
@@ -238,17 +239,17 @@ def robot_position_callback(msg):
     CURR_Z = msg.pose.position.z
 
     # Stop Conditions.
-    if CURR_Z < MIN_Z or (CURR_Z - 0.01) < GOAL_Z or CURR_FORCE < -5.0:
+    if CURR_Z < MIN_Z or (CURR_Z - 0.01) < GOAL_Z: #or CURR_FORCE < -22:
         if SERVO:
             SERVO = False
 
             # Grip.
             rospy.sleep(0.1)
-            set_finger_positions([8000, 8000])
+            set_finger_positions([8000, 8000, 8000])
             rospy.sleep(0.5)
 
             # Move Home.
-            move_to_position([0, -0.38, 0.35], [0.99, 0, 0, np.sqrt(1-0.99**2)])
+            move_to_position([0, -0.3, 0.3], [0.99, 0, 0, np.sqrt(1-0.99**2)])
             rospy.sleep(0.25)
 
             # stop_record_srv(std_srvs.srv.TriggerRequest())
@@ -283,24 +284,27 @@ if __name__ == '__main__':
     # start_record_srv = rospy.ServiceProxy('/data_recording/start_recording', std_srvs.srv.Trigger)
     # stop_record_srv = rospy.ServiceProxy('/data_recording/stop_recording', std_srvs.srv.Trigger)
 
-    start_force_srv = rospy.ServiceProxy('/j2n6s300_driver/in/start_force_control', kinova_msgs.srv.Start)
-    start_force_srv.call(kinova_msgs.srv.StartRequest())
-
+    # start_force_srv = rospy.ServiceProxy('/j2n6s300_driver/in/home_arm', kinova_msgs.srv.HomeArm)#go to home position
+    # start_force_srv.call(kinova_msgs.srv.HomeArmRequest())
     # Publish velocity at 100Hz.
     velo_pub = rospy.Publisher('/j2n6s300_driver/in/cartesian_velocity', kinova_msgs.msg.PoseVelocity, queue_size=1)
     #finger_pub = rospy.Publisher('/j2n6s300_driver/out/finger_position', kinova_msgs.msg.FingerPosition, queue_size=1)
+    
     r = rospy.Rate(100)
-
-    move_to_position([0, -0.38, 0.35], [0.99, 0, 0, np.sqrt(1-0.99**2)])
+    #start_force_srv = rospy.ServiceProxy('/j2n6s300_driver/in/start_force_control', kinova_msgs.srv.Start)#for safe's sake
+    #start_force_srv.call(kinova_msgs.srv.StartRequest())
+    move_to_position([0, -0.3, 0.3], [0.99, 0, 0, np.sqrt(1-0.99**2)])
     rospy.sleep(0.5)
-    set_finger_positions([0, 0])
+    set_finger_positions([0, 0, 0])
     rospy.sleep(0.5)
 
     SERVO = True
 
     while not rospy.is_shutdown():
         if SERVO:
-            result = gripper_client(CURRENT_FINGER_VELOCITY)
+            #result = gripper_client(CURRENT_FINGER_VELOCITY)
             #finger_pub.publish(kinova_msgs.msg.FingerPosition(*CURRENT_FINGER_VELOCITY))
+            rospy.Duration(secs=0.01)
+
             velo_pub.publish(kinova_msgs.msg.PoseVelocity(*CURRENT_VELOCITY))
         r.sleep()
