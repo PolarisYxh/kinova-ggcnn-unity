@@ -94,9 +94,11 @@ int main(int argc,char** argv)
             double* minp = &minv;
             double* maxp = &maxv;
             minMaxIdx(rgb, minp, maxp);
-            rgb.convertTo(rgb, CV_8U, 255.0/(maxv-minv));
-            flip(rgb, rgb, 0);
-            imwrite(rgb_str,rgb);
+            Mat minMat(rgb.size(), CV_32FC1, *minp);//2, 2, CV_8UC3, Scalar(0,255,0)
+            Mat diffMat = rgb-minMat;
+            diffMat.convertTo(diffMat, CV_8U, 255.0/(maxv-minv));
+            flip(diffMat, diffMat, 0);
+            imwrite(rgb_str,diffMat);
 
             successed_flag1 = 0;
             cout<<"rgb -- time:  " <<  time_val.tv_sec<<"."<<time_val.tv_usec<<endl;

@@ -140,7 +140,10 @@ def command_callback(target_pose, target_quaternion):
         try:
             end_effector = convert_pose(g_pose1, 'j2n6s300_end_effector', 'j2n6s300_link_base')
             end_effector_list = [end_effector.orientation.x, end_effector.orientation.y, end_effector.orientation.z, end_effector.orientation.w]
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException), e:
+        except Exception as ex:
+            template = "An exception of type {0} occurred. Arguments:{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
             return
         e1 = tft.euler_from_quaternion(end_effector_list)
 
@@ -166,7 +169,10 @@ def command_callback(target_pose, target_quaternion):
         p_gripper = geometry_msgs.msg.Pose()
         try:
             p_gripper = convert_pose(g_pose, 'j2n6s300_end_effector', 'j2n6s300_link_base')
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException), e:
+        except Exception as ex:
+            template = "An exception of type {0} occurred. Arguments:{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
             return
         publish_pose_as_transform(gp_base, 'j2n6s300_link_base', 'G', 0.0)
 

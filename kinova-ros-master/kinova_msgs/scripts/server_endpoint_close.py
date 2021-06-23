@@ -31,6 +31,8 @@ def main():
         #'SourceDestination_input': RosPublisher('SourceDestination', KinovaMoveitJoints, queue_size=10),
         #'NiryoTrajectory': RosSubscriber('NiryoTrajectory', KinovaTrajectory, unity_machine_ip, unity_machine_port),
         '/camera/depth/image_meters': RosPublisher('/camera/depth/image_meters',Image,queue_size=10),
+        '/camera/rgb/image_raw': RosPublisher('/camera/rgb/image_raw',Image,queue_size=10),
+        '/camera/rgb1/image_raw': RosPublisher('/camera/rgb1/image_raw',Image,queue_size=10),
         #'kinova_moveit': RosService('kinova_moveit', MoverService)#key:ros service in ros for plan    RosService: service    The service name in ROS   service_class:  The service node in ros
         '/j2n6s300/joint_states': RosPublisher('/j2n6s300/joint_states',JointState, queue_size=10),
         '/clock': RosPublisher('/clock', Clock, queue_size=10),

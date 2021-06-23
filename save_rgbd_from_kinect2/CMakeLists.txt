@@ -67,3 +67,10 @@ target_link_libraries(save_rgb
 	${OpenCV_LIBRARIES}
 	${kinect2_bridge_LIBRARIES}
 )
+
+add_executable(save_rgbd src/save_rgbd.cpp)
+target_link_libraries(save_rgbd
+	${catkin_LIBRARIES}
+	${OpenCV_LIBRARIES}
+	${kinect2_bridge_LIBRARIES}
+)
