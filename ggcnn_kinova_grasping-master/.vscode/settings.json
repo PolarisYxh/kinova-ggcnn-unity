@@ -10,7 +10,7 @@
         "/home/yxh/Documents/catkin/devel/lib/python2.7/dist-packages",
         "/opt/ros/melodic/lib/python2.7/dist-packages"
     ],
-    "python.pythonPath": "/usr/bin/python",
+    "python.pythonPath": "/home/yxh/anaconda3/envs/taichi/bin/python",
     "ros.distro": "melodic",
     "python.analysis.extraPaths": [
         "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/servo/devel/lib/python2.7/dist-packages",

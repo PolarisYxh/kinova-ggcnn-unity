@@ -29,7 +29,9 @@ class CornellDataset(GraspDatasetBase):
             graspf = graspf[int(l*ds_rotate):] + graspf[:int(l*ds_rotate)]
 
         depthf = [f.replace('cpos.txt', 'd.tiff') for f in graspf]
+        depthf = [f.replace('pos_label', 'depth_image') for f in depthf]
         rgbf = [f.replace('d.tiff', 'r.png') for f in depthf]
+        rgbf = [f.replace('depth_image', 'image') for f in depthf]
 
         self.grasp_files = graspf[int(l*start):int(l*end)]
         self.depth_files = depthf[int(l*start):int(l*end)]
