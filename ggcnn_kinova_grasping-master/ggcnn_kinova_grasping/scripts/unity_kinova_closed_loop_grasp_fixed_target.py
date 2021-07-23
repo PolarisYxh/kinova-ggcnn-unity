@@ -72,6 +72,40 @@ class Averager():
 
 
 pose_averager = Averager(6, 3)
+def move_pos():
+    g_pose1 = geometry_msgs.msg.Pose()
+    g_pose1.orientation.w = 1
+    end_effector = convert_pose(g_pose1, 'j2n6s300_end_effector', 'j2n6s300_link_base')
+    end_effector_list = [end_effector.orientation.x, end_effector.orientation.y, end_effector.orientation.z, end_effector.orientation.w]
+
+    q = tft.quaternion_from_euler(np.pi, np.pi/2, np.pi/2) # 绕j2n6s300_base_link's fixed x y z轴转动到正的位置;  np.pi, 0, np.pi/2 to left; np.pi/2, 0, np.pi/2 to forward;np.pi, np.pi/2, np.pi/2 to down
+    q1 = tft.quaternion_from_euler(np.pi/2, 0, 0)#将手指竖起来
+    q = tft.quaternion_multiply(q1, q)
+    end_effector_inverse = tft.quaternion_inverse(end_effector_list)
+    pgo = tft.quaternion_multiply(q, end_effector_inverse)
+
+    q1 = [pgo[0], pgo[1], pgo[2], pgo[3]]
+    # q1 = [pgo.x, pgo.y, pgo.z, pgo.w]
+    e = tft.euler_from_quaternion(q1)
+    dr = 1 * e[0]
+    dp = 1 * e[1]
+    dyaw = 1 * e[2]
+
+    vx = max(min(0 * 2.5, MAX_VELO_X), -1.0*MAX_VELO_X)
+    vy = max(min(0 * 2.5, MAX_VELO_Y), -1.0*MAX_VELO_Y)
+    vz = max(min(0, MAX_VELO_Z), -1.0*MAX_VELO_Z)
+
+    # Apply a nonlinearity to the velocity
+    v = np.array([vx, vy, vz])
+    vc = np.dot(v, VELO_COV)
+
+    CURRENT_VELOCITY[0] = vc[0]
+    CURRENT_VELOCITY[1] = vc[1]
+    CURRENT_VELOCITY[2] = vc[2]
+
+    CURRENT_VELOCITY[3] = 1 * dr #x: end effector self rotate
+    CURRENT_VELOCITY[4] = 1 * dp #y: up and down rotate
+    CURRENT_VELOCITY[5] = 1 * dyaw #max(min(1 * dyaw, MAX_ROTATION), -1 * MAX_ROTATION) #z: left and right rotate
 
 
 def command_callback(target_pose, target_quaternion):
@@ -154,7 +188,7 @@ def command_callback(target_pose, target_quaternion):
         gp_base.position.z = av[2]
         GOAL_Z = av[2]
         ang = av[3] - np.pi/2  # We don't want to align, we want to grip.
-        q = tft.quaternion_from_euler(np.pi/2, 0, np.pi/2) # 绕j2n6s300_base_link's fixed x y z轴转动到正的位置;  np.pi, 0, np.pi/2 to down; np.pi/2, 0, np.pi/2 to forward
+        q = tft.quaternion_from_euler(np.pi, np.pi/2, np.pi/2) # 绕j2n6s300_base_link's fixed x y z轴转动到正的位置;  np.pi, 0, np.pi/2 to left; np.pi/2, 0, np.pi/2 to forward;np.pi, np.pi/2, np.pi/2 to down
         q1 = tft.quaternion_from_euler(np.pi/2, 0, 0)#将手指竖起来
         q = tft.quaternion_multiply(q1, q)
         gp_base.orientation.x = q[0]
@@ -292,7 +326,7 @@ if __name__ == '__main__':
     position_sub = rospy.Subscriber('/j2n6s300_driver/out/tool_pose', geometry_msgs.msg.PoseStamped, robot_position_callback, queue_size=1)# 只要z坐标
     finger_sub = rospy.Subscriber('/j2n6s300_driver/out/finger_position', kinova_msgs.msg.FingerPosition, finger_position_callback, queue_size=1)# 只要
     #wrench_sub = rospy.Subscriber('/j2n6s300_driver/out/tool_wrench', geometry_msgs.msg.WrenchStamped, robot_wrench_callback, queue_size=1)
-    command_sub = rospy.Subscriber('/ggcnn/out/command', std_msgs.msg.Float32MultiArray, command_callback, queue_size=1)
+    #command_sub = rospy.Subscriber('/ggcnn/out/command', std_msgs.msg.Float32MultiArray, command_callback, queue_size=1)
 
     # https://github.com/dougsm/rosbag_recording_services
     # start_record_srv = rospy.ServiceProxy('/data_recording/start_recording', std_srvs.srv.Trigger)
@@ -315,8 +349,11 @@ if __name__ == '__main__':
     SERVO = True
 
     while not rospy.is_shutdown():
+        move2=3
+        command_callback([0.5,0.0,1], [0.645162225459, -0.318927784776, 0.694286052858, -0.00420092196819] )
+        #move_pos()
         if SERVO:
-            if move2 == False:
+            if move2 == 0:
                 command_callback([0.61874143089, -0.506091943919, 0.376129838746], [0.645162225459, -0.318927784776, 0.694286052858, -0.00420092196819] )
                 reach = True
                 for tem in CURRENT_VELOCITY:
@@ -327,13 +364,13 @@ if __name__ == '__main__':
                 if reach:
                     x.data = 0   # 0为close, 1为open
                     finger_unity_pub.publish(x)
-                    move2 = True
+                    move2 = 1
                     time.sleep(2)
                     print('reach')
                 else:
                     x.data = 1
                     finger_unity_pub.publish(x)
-            elif move2 == True:
+            elif move2 == 1:
                 command_callback([0.21874143089, -0.506091943919, 0.376129838746], [0.645162225459, -0.318927784776, 0.694286052858, -0.00420092196819] )
                 reach = True
                 for tem in CURRENT_VELOCITY:
@@ -344,7 +381,7 @@ if __name__ == '__main__':
                 if reach:
                     x.data = 1   # 0为close, 1为open
                     finger_unity_pub.publish(x)
-                    move2 = True
+                    move2 = 1
                 else:
                     x.data = 0
                     finger_unity_pub.publish(x)
