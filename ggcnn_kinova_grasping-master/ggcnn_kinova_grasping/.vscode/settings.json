@@ -21,5 +21,6 @@
         "/home/yxh/Documents/rospcl/devel/lib/python2.7/dist-packages",
         "/home/yxh/Documents/catkin/devel/lib/python2.7/dist-packages",
         "/opt/ros/melodic/lib/python2.7/dist-packages"
-    ]
+    ],
+    "ros.distro": "melodic"
 }

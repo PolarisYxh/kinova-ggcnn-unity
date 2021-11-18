@@ -1,13 +1,8 @@
-/**
- *
- * 函数功能：采集iaikinect2输出的彩色图和深度图数据，并以文件的形式进行存储
- *
- *
- * 分隔符为　逗号'，'　　
- * 时间戳单位为秒(s)　精确到小数点后６位(us)
- *
- * maker:crp
- * 2017-5-13
+/**\
+save
+topic2_name = "/ggcnn/img/grasp_plain"; //topic 名称
+topic1_name = "/ggcnn/img/width";
+topic3_name = "/ggcnn/img/ang"; //topic 名称
  */
 
 #include<iostream>
@@ -43,9 +38,9 @@ using namespace cv;
 Mat rgb, rgb1, depth,depth1;
 char successed_flag1 =0,successed_flag2=0,successed_flag3=0;
 
-string topic1_name = "/camera/rgb/image_raw"; //topic 名称
-string topic2_name = "/camera/depth/image_meters";
-string topic3_name = "/camera/rgb1/image_raw"; //topic 名称
+string topic2_name = "/ggcnn/img/grasp_plain"; //topic 名称
+string topic1_name = "/ggcnn/img/width";
+string topic3_name = "/ggcnn/img/ang"; //topic 名称
 
 string save_imagedata = "/home/yxh/image/";
 
@@ -74,7 +69,18 @@ void  callback_function_depth(const sensor_msgs::Image::ConstPtr  image_data)
    pCvImage->image.copyTo(depth);
    successed_flag2=1;
 }
-
+void save_depth(const string& rgb_str,Mat d)
+{
+    double minv = 0.0, maxv = 0.0;
+    double* minp = &minv;
+    double* maxp = &maxv;
+    minMaxIdx(d, minp, maxp);
+    Mat minMat(d.size(), CV_32FC1, *minp);//2, 2, CV_8UC3, Scalar(0,255,0)
+    Mat diffMat = d-minMat;
+    diffMat.convertTo(diffMat, CV_8U, 255.0/(maxv-minv));
+    flip(diffMat, diffMat, 0);
+    imwrite(rgb_str,diffMat);
+}
 int main(int argc,char** argv)
 {
     string out_result;
@@ -99,7 +105,7 @@ int main(int argc,char** argv)
     int num1=0;
     while(ros::ok())
     {
-            if( successed_flag1&&successed_flag2&&successed_flag3)
+            if(successed_flag1&&successed_flag2&&successed_flag3)
             {
                 //gettimeofday(&time_val,&tz);//us
 				//  time_stamp =time_val.tv_sec+ time_val.tv_usec/1000000.0;
@@ -110,23 +116,22 @@ int main(int argc,char** argv)
                 rgb_str = save_imagedata+"rgb/"+std::to_string(k)+".png";
                 rgb1_str = save_imagedata+"rgb1/"+std::to_string(k)+".png";
                 dep_str =save_imagedata+"depth/"+std::to_string(k)+".png";// 输出图像目录
-                cv::cvtColor(rgb, rgb, cv::COLOR_RGB2BGR);
+                // cv::cvtColor(rgb, rgb, cv::COLOR_RGB2BGR);
                 flip(rgb, rgb, 0);
                 imwrite(rgb_str,rgb);
 
-                cv::cvtColor(rgb1, rgb1, cv::COLOR_RGB2BGR);
+                save_depth(rgb1_str, rgb1);
+                // cv::cvtColor(rgb1, rgb1, cv::COLOR_RGB2BGR);
                 flip(rgb1, rgb1, 0);
-                imwrite(rgb1_str,rgb1);
+                // imwrite(rgb1_str,rgb1);
 
-                double minv = 0.0, maxv = 0.0;
-                double* minp = &minv;
-                double* maxp = &maxv;
-                minMaxIdx(depth, minp, maxp);
-                Mat minMat(depth.size(), CV_32FC1, *minp);//2, 2, CV_8UC3, Scalar(0,255,0)
-                Mat diffMat = depth-minMat;
-                diffMat.convertTo(diffMat, CV_8U, 255.0/(maxv-minv));
-                flip(diffMat, diffMat, 0);
-                imwrite(dep_str,diffMat);
+                flip(depth, depth, 0);
+                imwrite(dep_str,depth);
+                // cv::cvtColor(depth, depth, cv::COLOR_RGB2BGR);
+                // flip(depth, depth, 0);
+                // imwrite(rgb1_str,depth);
+                // save_depth(rgb_str, rgb);
+
 
                 successed_flag1=0;
                 successed_flag2=0;

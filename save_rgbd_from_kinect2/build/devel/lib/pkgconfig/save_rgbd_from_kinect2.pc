@@ -1,0 +1,8 @@
+prefix=/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/ROS/src/save_rgbd_from_kinect2/build/devel
+
+Name: save_rgbd_from_kinect2
+Description: Description of save_rgbd_from_kinect2
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

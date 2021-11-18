@@ -12,7 +12,7 @@ from skimage.draw import circle
 from skimage.feature import peak_local_max
 from models.ggcnn import GGCNN
 import rospy
-from helpers.cv_bridge import CvBridge
+from helpers.cv_bridge import CvBridge,TimeIt
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import Image, CameraInfo
 from std_msgs.msg import Float32MultiArray
@@ -21,8 +21,6 @@ import sys
 
 bridge = CvBridge()
 
-
-
 rospy.init_node('ggcnn_detection')
 # Output publishers.
 grasp_pub = rospy.Publisher('ggcnn/img/grasp', Image, queue_size=1)
@@ -30,7 +28,7 @@ grasp_plain_pub = rospy.Publisher('ggcnn/img/grasp_plain', Image, queue_size=1)
 depth_pub = rospy.Publisher('ggcnn/img/depth', Image, queue_size=1)
 ang_pub = rospy.Publisher('ggcnn/img/ang', Image, queue_size=1)
 cmd_pub = rospy.Publisher('ggcnn/out/command', Float32MultiArray, queue_size=1)
-
+width_pub = rospy.Publisher('ggcnn/img/width', Image, queue_size=1)
 # Initialise some globals.
 prev_mp = np.array([150, 150])
 ROBOT_Z = 0
@@ -45,28 +43,14 @@ device = torch.device("cpu")
 # cx = K[2]
 # fy = K[4]
 # cy = K[5]
+
+# FOV_H=2*arctan(X/2f);
+# FOV_V=2*arctan(Y/2f);
 fx = 1000  #  focal_length/(sensor_size.x/pic_width)
 fy = 1000  #  focal_length/(sensor_size.y/pic_height)
 cx = 320  #  pic_width/2
 cy = 240  #  pic_height/2
-
-# Execution Timing
-class TimeIt:
-    def __init__(self, s):
-        self.s = s
-        self.t0 = None
-        self.t1 = None
-        self.print_output = False
-
-    def __enter__(self):
-        self.t0 = time.time()
-
-    def __exit__(self, t, value, traceback):
-        self.t1 = time.time()
-        if self.print_output:
-            print('%s: %s' % (self.s, self.t1 - self.t0))
-
-
+frame_num = 0
 def robot_pos_callback(data):
     global ROBOT_Z
     ROBOT_Z = data.pose.position.z
@@ -86,6 +70,24 @@ def depth_callback(depth_message):
     global fx, cx, fy, cy
     with TimeIt('Crop'):
         depth = bridge.imgmsg_to_cv2(depth_message)
+        # depth = dep[:,:,2]
+        # cv2.imwrite('%d_depth.exr'%frame_num,dep)
+        # print(depth)
+        # point_depth = depth[240, 320]
+
+        # vp_inverse=np.array(
+        #             [[0.32000, 0.00000, 0.00000,  0.00000],
+        #             [0.00000, 0.19692, 0.00000,  0.00000],
+        #             [0.00000, 0.00000, 0.00000, -1.00000],
+        #             [0.00000, 0.00000, -4.95000, 5.05000]])
+
+        # point = np.matmul(vp_inverse, np.array([[0],[0],[point_depth*2-1],[1]]))
+        # point = point/point[3][0]
+        # # These magic numbers are my camera intrinsic parameters.
+        # x = (320 - cx)/(fx) * point_depth
+        # y = (240 - cy)/(fy) * point_depth
+        # z = point_depth
+
         # Crop a square out of the middle of the depth and resize it to 300*300
         crop_size = 400
         depth_crop = cv2.resize(depth[(480-crop_size)//2:(480-crop_size)//2+crop_size, (640-crop_size)//2:(640-crop_size)//2+crop_size], (300, 300))
@@ -203,7 +205,7 @@ def depth_callback(depth_message):
         depth_pub.publish(bridge.cv2_to_imgmsg(depth_crop))
 
         ang_pub.publish(bridge.cv2_to_imgmsg(ang_out))
-
+        width_pub.publish(bridge.cv2_to_imgmsg(width_out))
         # Output the best grasp pose relative to camera.
         cmd_msg = Float32MultiArray()
         cmd_msg.data = [x, y, z, ang, width, depth_center]

@@ -1,0 +1,45 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/ROS/devel/include/**",
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/servo/devel/include/**",
+        "/home/yxh/Documents/ros_tutorials-melodic-devel/devel/include/**",
+        "/home/yxh/Documents/phantom_omni/devel/include/**",
+        "/home/yxh/Documents/glove/devel/include/**",
+        "/home/yxh/Documents/ROS-Academy-for-Beginners-master/devel/include/**",
+        "/home/yxh/Documents/rospcl/devel/include/**",
+        "/home/yxh/Documents/catkin/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/yxh/Documents/ROS-Academy-for-Beginners-master/src/dependlib/hector_slam/hector_geotiff/include/**",
+        "/home/yxh/Documents/ROS-Academy-for-Beginners-master/src/dependlib/hector_slam/hector_map_tools/include/**",
+        "/home/yxh/Documents/ROS-Academy-for-Beginners-master/src/dependlib/hector_slam/hector_mapping/include/**",
+        "/home/yxh/Documents/ROS-Academy-for-Beginners-master/src/dependlib/hector_slam/hector_marker_drawing/include/**",
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/ROS/src/kinova-ros-master/kinova_moveit/inverse_kinematics_plugins/ikfast/j2n6s300_ikfast/include/**",
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/ROS/src/kinova-ros-master/kinova_moveit/inverse_kinematics_plugins/ikfast/j2s6s300_ikfast/include/**",
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/ROS/src/kinova-ros-master/kinova_moveit/inverse_kinematics_plugins/ikfast/j2s7s300_ikfast/include/**",
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/ROS/src/kinova-ros-master/kinova_moveit/kinova_arm_moveit_demo/include/**",
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/ROS/src/kinova-ros-master/kinova_driver/include/**",
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/servo/src/kinova_moveit_servo/include/**",
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/ROS/src/kinova-ros-master/kinova_moveit/inverse_kinematics_plugins/ikfast/m1n6s300_ikfast/include/**",
+        "/home/yxh/my_gazebo_plugin/src/model/include/**",
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/ROS/src/my_depth_image_proc/include/**",
+        "/home/yxh/Documents/ROS-Academy-for-Beginners-master/src/dependlib/openslam_gmapping/include/**",
+        "/home/yxh/Documents/rospcl/src/perception_pcl-melodic-devel/pcl_conversions/include/**",
+        "/home/yxh/Documents/rospcl/src/perception_pcl-melodic-devel/pcl_ros/include/**",
+        "/home/yxh/my_gazebo_plugin/src/pose/include/**",
+        "/home/yxh/Documents/catkin/src/turtlebot3_simulations/turtlebot3_fake/include/**",
+        "/home/yxh/Documents/catkin/src/turtlebot3_simulations/turtlebot3_gazebo/include/**",
+        "/home/yxh/Documents/catkin/src/turtlebot3/turtlebot3_slam/include/**",
+        "/home/yxh/Documents/mars_unity/Unity-Robotics-Hub-main/tutorials/pick_and_place/servo/src/universal_robot-melodic-devel/ur_kinematics/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}

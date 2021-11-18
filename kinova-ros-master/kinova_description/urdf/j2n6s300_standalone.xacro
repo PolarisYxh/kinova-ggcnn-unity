@@ -32,7 +32,7 @@
   <joint name="camera_rack_joint" type="fixed">
     <child link="camera_rack_link" />
     <parent link="j2n6s300_link_6" />
-    <origin xyz="0 0 0.007" rpy="0 0 0" />
+    <origin xyz="0 0 0.007" rpy="0 0 3.14159" />
   </joint>
   <link name="camera_rack_link">
     <!--visual>

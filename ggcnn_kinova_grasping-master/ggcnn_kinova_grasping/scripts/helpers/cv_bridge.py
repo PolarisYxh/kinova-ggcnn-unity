@@ -1,6 +1,23 @@
 import cv2
 import sys
 from sensor_msgs.msg import Image, CameraInfo
+import time
+# Execution Timing
+class TimeIt:
+    def __init__(self, s):
+        self.s = s
+        self.t0 = None
+        self.t1 = None
+        self.print_output = False
+
+    def __enter__(self):
+        self.t0 = time.time()
+
+    def __exit__(self, t, value, traceback):
+        self.t1 = time.time()
+        if self.print_output:
+            print('%s: %s' % (self.s, self.t1 - self.t0))
+
 class CvBridge(object):
     """
     The CvBridge is an object that converts between OpenCV Images and ROS Image messages.
@@ -124,6 +141,12 @@ class CvBridge(object):
         if img_msg.encoding=='32FC1':
             dtype = 'float32'
             n_channels = 1
+        elif img_msg.encoding=='32FC4':
+            dtype = 'float32'
+            n_channels = 4
+        elif img_msg.encoding=='8UC4':
+            dtype = 'uint8'
+            n_channels = 4
         else:
             dtype, n_channels = self.encoding_to_dtype_with_channels(img_msg.encoding)
         dtype = np.dtype(dtype)

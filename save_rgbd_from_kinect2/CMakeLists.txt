@@ -74,3 +74,9 @@ target_link_libraries(save_rgbd
 	${OpenCV_LIBRARIES}
 	${kinect2_bridge_LIBRARIES}
 )
+add_executable(read_depth src/read_depth.cpp)
+target_link_libraries(read_depth
+	${catkin_LIBRARIES}
+	${OpenCV_LIBRARIES}
+	${kinect2_bridge_LIBRARIES}
+)

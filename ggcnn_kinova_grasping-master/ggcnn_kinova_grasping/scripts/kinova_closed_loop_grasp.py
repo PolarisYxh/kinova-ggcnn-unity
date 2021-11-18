@@ -180,7 +180,6 @@ def command_callback(msg):
 
         vx = max(min(dx * 2.5, MAX_VELO_X), -1.0*MAX_VELO_X)
         vy = max(min(dy * 2.5, MAX_VELO_Y), -1.0*MAX_VELO_Y)
-        vy=0
         vz = max(min(dz - 0.04, MAX_VELO_Z), -1.0*MAX_VELO_Z)
 
         # Apply a nonlinearity to the velocity
@@ -289,7 +288,7 @@ if __name__ == '__main__':
     # Publish velocity at 100Hz.
     velo_pub = rospy.Publisher('/j2n6s300_driver/in/cartesian_velocity', kinova_msgs.msg.PoseVelocity, queue_size=1)
     #finger_pub = rospy.Publisher('/j2n6s300_driver/out/finger_position', kinova_msgs.msg.FingerPosition, queue_size=1)
-    
+
     r = rospy.Rate(100)
     #start_force_srv = rospy.ServiceProxy('/j2n6s300_driver/in/start_force_control', kinova_msgs.srv.Start)#for safe's sake
     #start_force_srv.call(kinova_msgs.srv.StartRequest())

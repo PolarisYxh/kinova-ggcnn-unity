@@ -15,7 +15,7 @@ from helpers.covariance import generate_cartesian_covariance
 
 from helpers.gripper_action_client import set_finger_positions
 from helpers.position_action_client import move_to_position
-
+import time
 MAX_VELO_X = 0.25
 MAX_VELO_Y = 0.15
 MAX_VELO_Z = 0.085
@@ -26,6 +26,8 @@ CURRENT_FINGER_VELOCITY = [0, 0, 0]
 MIN_Z = 0.01
 CURR_Z = 0.35
 #CURR_FORCE = 0.0
+GOAL_X = 0.0
+GOAL_Y = 0.0
 GOAL_Z = 0.0
 
 VELO_COV = generate_cartesian_covariance(0)
@@ -35,7 +37,9 @@ CURR_DEPTH = 350  # Depth measured from camera.
 
 SERVO = False
 vel_ok = False
-home_state="down"
+home_state="left"
+finger_unity_pub = rospy.Publisher('/j2n6s300/fingers', std_msgs.msg.Float32, queue_size=1)
+move1 = 0
 class Averager():
     def __init__(self, inputs, time_steps):
         self.buffer = np.zeros((time_steps, inputs))
@@ -79,7 +83,7 @@ def command_callback(msg):
     global GOAL_Z
     global GRIP_WIDTH_MM
     global VELO_COV
-    global vel_ok
+    global vel_ok,move1
     CURR_DEPTH = msg.data[5]
 
     if SERVO:
@@ -88,8 +92,7 @@ def command_callback(msg):
 
         # PBVS Method.
 
-        if d[2] > 0.150:  # Min effective range of the realsense.
-
+        if d[2] > 0.15:  # Min effective range of the realsense.
             # Convert width in pixels to mm.
             # 0.07 is distance from end effector (CURR_Z) to camera.
             # 0.1 is approx degrees per pixel for the realsense.
@@ -115,11 +118,9 @@ def command_callback(msg):
             e = tft.euler_from_quaternion([gpbo.x, gpbo.y, gpbo.z, gpbo.w])
             # Only really care about rotation about x (e[0]). update is mean function
             av = pose_averager.update(np.array([gp_base.position.x, gp_base.position.y, gp_base.position.z, e[0]]))
-
         else:
             gp_base = geometry_msgs.msg.Pose()
             av = pose_averager.evaluate()
-
         # Average pick pose in base frame.
         gp_base.position.x = av[0]
         gp_base.position.y = av[1]
@@ -129,7 +130,8 @@ def command_callback(msg):
         if home_state=="left":
             q = tft.quaternion_from_euler(ang, 0, np.pi)
         if home_state=="down":
-            q = tft.quaternion_from_euler(np.pi, 0, ang)
+            q = tft.quaternion_from_euler(0, 0, ang+3*np.pi/2)
+        print(ang)
         gp_base.orientation.x = q[0]
         gp_base.orientation.y = q[1]
         gp_base.orientation.z = q[2]
@@ -148,7 +150,9 @@ def command_callback(msg):
         dx = (gp_base.position.x - p_gripper.position.x)
         dy = (gp_base.position.y - p_gripper.position.y)
         dz = (gp_base.position.z - p_gripper.position.z)
-
+        # if dz<0.05:
+        #     move1=1
+        #     print('move1')
 
         # Orientation velocity control is done in the frame of the gripper,
         #  so figure out the rotation offset in the end effector frame.

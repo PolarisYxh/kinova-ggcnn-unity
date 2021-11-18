@@ -393,7 +393,7 @@ if __name__ == '__main__':
             twist.angular = geometry_msgs.msg.Vector3(CURRENT_VELOCITY[3], CURRENT_VELOCITY[4], CURRENT_VELOCITY[5])#0, 0, 0
             tem = geometry_msgs.msg.TwistStamped()
             tem.twist = twist
-            #rospy.loginfo(tem.twist)
+            rospy.loginfo(tem.twist)
             velo_unity_pub.publish(tem)
 
             CURRENT_VELOCITY = [0, 0, 0, 0, 0, 0]

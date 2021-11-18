@@ -13,7 +13,7 @@ import geometry_msgs.msg
 
 from helpers.gripper_action_client import set_finger_positions
 from helpers.position_action_client import position_client, move_to_position
-from helpers.transforms import current_robot_pose, publish_tf_quaterion_as_transform, convert_pose, publish_pose_as_transform
+from helpers.transforms import current_robot_pose, publish_tf_quaternion_as_transform, convert_pose, publish_pose_as_transform
 from helpers.covariance import generate_cartesian_covariance
 
 MOVING = False  # Flag whether the robot is moving under velocity control.

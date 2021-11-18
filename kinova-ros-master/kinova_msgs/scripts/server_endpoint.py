@@ -25,9 +25,10 @@ def main():
     rate = rospy.Rate(10)  # 10hz
 
     # Create ROS communication objects dictionary for routing messages
+    # #'SourceDestination_input': RosPublisher('SourceDestination', KinovaMoveitJoints, queue_size=10),
+    #'NiryoTrajectory': RosSubscriber('NiryoTrajectory', KinovaTrajectory, unity_machine_ip, unity_machine_port),
     source_destination_dict = {
-        #'SourceDestination_input': RosPublisher('SourceDestination', KinovaMoveitJoints, queue_size=10),
-        #'NiryoTrajectory': RosSubscriber('NiryoTrajectory', KinovaTrajectory, unity_machine_ip, unity_machine_port),
+
         '/camera/depth/image_meters': RosPublisher('/camera/depth/image_meters',Image,queue_size=10),
         'kinova_moveit': RosService('kinova_moveit', MoverService)#key:ros service in ros for plan    RosService: service    The service name in ROS   service_class:  The service node in ros
     }
