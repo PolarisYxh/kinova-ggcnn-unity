@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from skimage.draw import polygon
 from skimage.feature import peak_local_max
 
-
 def _gr_text_to_no(l, offset=(0, 0)):
     """
     Transform a single point from a Cornell file line to a pair of ints.
@@ -15,6 +14,15 @@ def _gr_text_to_no(l, offset=(0, 0)):
     """
     x, y = l.split()
     return [int(round(float(y))) - offset[0], int(round(float(x))) - offset[1]]
+def _gr_text_to_no_for_yxh(l, offset=(0, 0)):
+    """
+    Transform a single point from a Cornell file line to a pair of ints.
+    :param l: Line from Cornell grasp file (str)
+    :param offset: Offset to apply to point positions
+    :return: Point [y, x]
+    """
+    x, y = l.split()
+    return [int(round(float(y))) - offset[0], int(round(float(x[:-1]))) - offset[1]]
 
 
 class GraspRectangles:
@@ -106,7 +114,36 @@ class GraspRectangles:
         grs = cls(grs)
         grs.scale(scale)
         return grs
+    @classmethod
+    def load_from_yxh_file(cls, fname, scale=1.0):
+        """
+        Load grasp rectangles from a Jacquard dataset file.
+        :param fname: Path to file.
+        :param scale: Scale to apply (e.g. if resizing images)
+        :return: GraspRectangles()
+        """
+        grs = []
+        with open(fname) as f:
+            while True:
+                # Load 4 lines at a time, corners of bounding box.
+                p0 = f.readline()
+                if not p0:
+                    break  # EOF
+                p1, p2, p3 = f.readline(), f.readline(), f.readline()
+                try:
+                    gr = np.array([
+                        _gr_text_to_no_for_yxh(p0),
+                        _gr_text_to_no_for_yxh(p1),
+                        _gr_text_to_no_for_yxh(p2),
+                        _gr_text_to_no_for_yxh(p3)
+                    ])
 
+                    grs.append(GraspRectangle(gr))
+
+                except ValueError:
+                    # Some files contain weird values.
+                    continue
+        return cls(grs)
     def append(self, gr):
         """
         Add a grasp rectangle to this GraspRectangles object
@@ -191,6 +228,8 @@ class GraspRectangles:
         :return: float, mean centre of all GraspRectangles
         """
         points = [gr.points for gr in self.grs]
+        if len(points)==0:
+            print(points)
         return np.mean(np.vstack(points), axis=0).astype(np.int)
 
 

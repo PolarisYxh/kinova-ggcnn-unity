@@ -168,6 +168,10 @@ class DepthImage(Image):
     @classmethod
     def from_tiff(cls, fname):
         return cls(imread(fname))
+    @classmethod
+    def from_exr(cls, fname):
+        x=cv2.imread(fname, cv2.IMREAD_UNCHANGED)
+        return cls(x[:,:,2])
 
     def inpaint(self, missing_value=0):
         """

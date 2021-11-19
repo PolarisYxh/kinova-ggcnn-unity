@@ -237,7 +237,7 @@ def run():
     summary(net, (input_channels, 300, 300))
     sys.stdout = sys.__stdout__
     f.close()
-
+    torch.load(os.path.join(save_folder,"epoch_10_iou_0.00_statedict.pt"))
     best_iou = 0.0
     for epoch in range(args.epochs):
         logging.info('Beginning Epoch {:02d}'.format(epoch))

@@ -58,6 +58,7 @@ class get_target:
         self.get_flag = False
         self.get_normal_flag = False
         self.dir= [0,0,1]
+        self.center= [0,0,0,0]
         self.pos= [0,0,0,0,0,0]
 
     def robot_pos_callback(self,data):
@@ -88,7 +89,7 @@ class get_target:
         self.get_normal_flag = True
         # while 1:
         #     if not self.get_normal_flag:
-        return self.dir
+        return self.dir,self.center
     def eyeDepth2normal_dir(self, depth_message):
         '''得到法线图,return -1~1
         '''
@@ -151,21 +152,25 @@ class get_target:
         dir = dir/np.linalg.norm(dir)
         return dir
     def eyeDepth2pointnormal(self, depth_message):
-        # 采样得到图片的法线
+        # 采样得到图片的法线,还有优化空间：inRange直接得到surface平面轮廓
         if self.get_normal_flag:
             depth = self.bridge.imgmsg_to_cv2(depth_message)
             black_img = np.zeros(depth.shape,np.uint8)
             mask=cv2.inRange(depth, 0, 0.18)
             # depth = depth*mask
             # self.show_eye_img(depth)
-            contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)#find handle's outline
             if len(contours)==0:
+                # 优化
+                # mask=cv2.inRange(depth, 0.18, 0.3)#find surface's outline
+                # contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+                # x,y,w,h     = cv2.boundingRect(contours[0])
                 self.dir=[0,0,1]
                 print("mission failed or error!")
                 return
-            x,y,w,h    = cv2.boundingRect(contours[0])
-
-            center = [y+h/2, x+w/2]
+            x,y,w,h     = cv2.boundingRect(contours[0])
+            self.center = [y+h/2, x+w/2]
+            center      = self.center
             # cv2.rectangle(black_img,(x,y),(x+w-1,y+h-1),(255,0,0),2)
             # cv2.imshow("2", black_img)
             # cv2.waitKey()

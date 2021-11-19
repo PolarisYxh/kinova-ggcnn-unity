@@ -13,7 +13,8 @@
             "console": "integratedTerminal",
             // "args": ["--network", "ggcnn", "--dataset", "cornell", "--dataset-path", "../../cornell"],
             // "args": [ "--network", "ggcnn2_weights_cornell/epoch_50_cornell", "--dataset", "cornell", "--dataset-path", "../../cornell", "--iou-eval","--vis"],
-            "args": [ "--network", "ggcnn_weights_cornell/ggcnn_epoch_23_cornell", "--dataset", "cornell", "--dataset-path", "../../cornell", "--iou-eval","--vis"]
+            // "args": [ "--network", "ggcnn_weights_cornell/ggcnn_epoch_23_cornell", "--dataset", "cornell", "--dataset-path", "../../cornell", "--iou-eval","--vis"],//for evaluate
+            "args": [ "--network", "ggcnn", "--dataset", "yxh", "--dataset-path",  "/media/yxh/My Passport/graduateDesign/handleMovableDataSet/handledataset"] //for train
         }
     ]
 }

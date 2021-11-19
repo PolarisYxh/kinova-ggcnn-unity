@@ -163,17 +163,17 @@ def get_obb(rgb):
     contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
     rect = cv2.minAreaRect(contours[0])
-    rect    = cv2.boundingRect(contours[0])
+    # rect    = cv2.boundingRect(contours[0])
     if rect[1][0]>rect[1][1]:
         ang = 180-rect[2]
         width = rect[1][1]
     else:
         width = rect[1][0]
         ang = 90-rect[2]
-    # show_contour(black_img,rect,contours)
+    show_contour(black_img,rect,contours)
 
 if __name__=="__main__":
-    img_msg=cv2.imread("scripts/temporary/segmentation_2306.png",cv2.IMREAD_UNCHANGED)#depth_458.exr
+    img_msg=cv2.imread("scripts/temporary/depth_2698.exr",cv2.IMREAD_UNCHANGED)#depth_458.exr
     # print(img_msg[200,270])
 
     # img_msg = img_msg[:,:,:3]
@@ -188,7 +188,8 @@ if __name__=="__main__":
     # # print(threshold_output[1][200,270])
     # cv2.imshow("1",img_msg)
     # cv2.waitKey()
-    get_obb(img_msg[:,:,:3])
+    show_eye_img(img_msg)
+    # get_obb(img_msg[:,:,:3])
 
-    cv2.imshow("1",img_msg)
-    cv2.waitKey()
+    # cv2.imshow("1",img_msg)
+    # cv2.waitKey()

@@ -174,9 +174,9 @@ def open_servo(av):
         v = np.array([vx, vy, vz])
         vc = np.dot(v, VELO_COV)
 
-        CURRENT_VELOCITY[0] = vc[0]
-        CURRENT_VELOCITY[1] = vc[1]
-        CURRENT_VELOCITY[2] = vc[2]
+        CURRENT_VELOCITY[0] = vc[0] # forward
+        CURRENT_VELOCITY[1] = vc[1] # left
+        CURRENT_VELOCITY[2] = vc[2] # up
 
         CURRENT_VELOCITY[3] = 1 * dr #x: end effector self rotate
         CURRENT_VELOCITY[4] = 1 * dp #y: up and down rotate
@@ -317,16 +317,21 @@ if __name__ == '__main__':
                     close_finger = False
 
 
-                # d = np.array([0, 0, -0.02, 0, -0.303687636, 0])
-                dir = ggcnn.get_normal()
-
-                if abs(dir[0])>abs(dir[1]):
+                # d = np.array([0.02, -0.02, 0, 0, 0, 0])
+                dir,center = ggcnn.get_normal()
+                if abs(dir[2])==1:
+                    d = np.array([0, 0, -0.02, 0, 0, 0])#x positive: right, y positive:down,z positive: forward
+                    if center[1]>320:
+                        d+=np.array([0.02, 0, 0, 0, 0, 0])
+                    elif center[1]<320:
+                        d+=np.array([-0.02, 0, 0, 0, 0, 0])
+                elif abs(dir[0])>abs(dir[1]):
                     theta = np.arctan(dir[0]/dir[2])
                     print(theta/np.pi*180)
-                    d = np.array([0, 0, -0.01, 0, -theta, 0])
+                    d = np.array([ 0, 0, 0,      0, -theta, 0])
                 else:
                     theta = np.arctan(dir[1]/dir[2])
-                    d = np.array([0, 0, -0.01, -theta, 0, 0])
+                    d = np.array([0, 0,  0, -theta,      0, 0])
                 d = d+cam2finger_center
                 av=get_target_3d(d)
                 open_servo(av)
