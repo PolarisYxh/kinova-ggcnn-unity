@@ -46,7 +46,7 @@ def parse_args():
 
     # Logging etc.
     parser.add_argument('--description', type=str, default='', help='Training description')
-    parser.add_argument('--outdir', type=str, default='output/models/', help='Training Output Directory')
+    parser.add_argument('--outdir', type=str, default='output/models2/', help='Training Output Directory')
     parser.add_argument('--logdir', type=str, default='tensorboard/', help='Log directory')
     parser.add_argument('--vis', action='store_true', help='Visualise the training process')
 
@@ -224,9 +224,14 @@ def run():
     input_channels = 1*args.use_depth + 3*args.use_rgb
     ggcnn = get_network(args.network)
 
-    net = ggcnn(input_channels=input_channels)
+    # net = ggcnn(input_channels=input_channels)
+    print(torch.cuda.is_available())
+    print(torch.cuda.device_count())
     device = torch.device("cuda:0")
-    net = net.to(device)
+    
+    # net = torch.load("./ggcnn_weights_cornell/ggcnn_epoch_23_cornell",map_location=device)
+    net = torch.load("./ggcnn2_weights_cornell/epoch_50_cornell",map_location=device)
+    # net = net.to(device)
     optimizer = optim.Adam(net.parameters())
     logging.info('Done')
 
@@ -237,7 +242,7 @@ def run():
     summary(net, (input_channels, 300, 300))
     sys.stdout = sys.__stdout__
     f.close()
-    torch.load(os.path.join(save_folder,"epoch_10_iou_0.00_statedict.pt"))
+    
     best_iou = 0.0
     for epoch in range(args.epochs):
         logging.info('Beginning Epoch {:02d}'.format(epoch))

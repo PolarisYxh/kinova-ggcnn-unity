@@ -178,84 +178,10 @@ def open_servo(av):
         CURRENT_VELOCITY[1] = vc[1] # left
         CURRENT_VELOCITY[2] = vc[2] # up
 
-        CURRENT_VELOCITY[3] = 1 * dr #x: end effector self rotate
-        CURRENT_VELOCITY[4] = 1 * dp #y: up and down rotate
-        CURRENT_VELOCITY[5] = 1 * dyaw #max(min(1 * dyaw, MAX_ROTATION), -1 * MAX_ROTATION) #z: left and right rotate
+        CURRENT_VELOCITY[3] = 1 * dr #x: end effector self rotate,positive is shun
+        CURRENT_VELOCITY[4] = 1 * dp #y: up and down rotate (positive is down)
+        CURRENT_VELOCITY[5] = 1 * dyaw  #z: left and right rotate,positive is left
 
-# def robot_wrench_callback(msg):
-#     # Monitor force on the end effector, with some smoothing.
-#     global CURR_FORCE
-#     CURR_FORCE = 0.5 * msg.wrench.force.z + 0.5 * CURR_FORCE
-
-
-def finger_position_callback(msg):
-    global SERVO
-    global CURRENT_FINGER_VELOCITY
-    global CURR_DEPTH
-    global CURR_Z
-    global GRIP_WIDTH_MM
-
-    # Only move the fingers when we're 200mm from the table and servoing.
-    if CURR_Z < 0.200 and CURR_DEPTH > 80 and SERVO:
-        # 4000 ~= 70mm
-        g = min((1 - (min(GRIP_WIDTH_MM, 70)/70)) * (6800-4000) + 4000, 5500)
-
-        # Move fast from fully open.
-        gain = 2
-        if CURR_Z > 0.12:
-            gain = 5
-
-        err = gain * (g - msg.finger1)
-        CURRENT_FINGER_VELOCITY = [err, err, 0]
-
-    else:
-        CURRENT_FINGER_VELOCITY = [0, 0, 0]
-
-
-def robot_position_callback(msg):#只要 z 坐标
-    global SERVO
-    global CURR_Z
-    global CURR_DEPTH
-    #global CURR_FORCE
-    global VELO_COV
-    global pose_averager
-    global start_record_srv
-    global stop_record_srv
-
-    CURR_X = msg.pose.position.x
-
-    # Stop Conditions.
-    if CURR_Z < MIN_Z or (CURR_Z - 0.01) < GOAL_Z: #or CURR_FORCE < -5.0:
-        if SERVO:
-            SERVO = False
-
-            # Grip.
-            rospy.sleep(0.1)
-            set_finger_positions([8000, 8000])
-            rospy.sleep(0.5)
-
-            # Move Home.
-            move_to_position([0, -0.38, 0.35], [0.99, 0, 0, np.sqrt(1-0.99**2)])
-            rospy.sleep(0.25)
-
-            # stop_record_srv(std_srvs.srv.TriggerRequest())
-
-            raw_input('Press Enter to Complete')
-
-            # Generate a control nonlinearity for this run.
-            VELO_COV = generate_cartesian_covariance(0.0)
-
-            # Open Fingers
-            set_finger_positions([0, 0])
-            rospy.sleep(1.0)
-
-            pose_averager.reset()
-
-            raw_input('Press Enter to Start')
-
-            # start_record_srv(std_srvs.srv.TriggerRequest())
-            rospy.sleep(0.5)
-            SERVO = True
 
 if __name__ == '__main__':
     rospy.init_node('kinova_velocity_control')

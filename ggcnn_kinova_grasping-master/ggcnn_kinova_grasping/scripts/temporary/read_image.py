@@ -174,6 +174,7 @@ def get_obb(rgb):
 
 if __name__=="__main__":
     img_msg=cv2.imread("scripts/temporary/depth_2698.exr",cv2.IMREAD_UNCHANGED)#depth_458.exr
+    img_msg=cv2.imread("scripts/temporary/pcd0100d.tiff",cv2.IMREAD_UNCHANGED)
     # print(img_msg[200,270])
 
     # img_msg = img_msg[:,:,:3]

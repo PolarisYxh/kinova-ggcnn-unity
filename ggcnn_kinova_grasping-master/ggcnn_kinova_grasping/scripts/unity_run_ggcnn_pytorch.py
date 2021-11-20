@@ -33,7 +33,7 @@ width_pub = rospy.Publisher('ggcnn/img/width', Image, queue_size=1)
 prev_mp = np.array([150, 150])
 ROBOT_Z = 0
 
-model = torch.load('./scripts/ggcnn_weights_cornell/ggcnn_epoch_23_cornell',map_location=torch.device('cpu'))
+model = torch.load('./scripts/ggcnn_weights_cornell/epoch_40',map_location=torch.device('cpu'))
 device = torch.device("cpu")
 
 # Get the camera parameters

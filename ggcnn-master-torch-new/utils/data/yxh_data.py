@@ -55,6 +55,7 @@ class yxhDataset(GraspDatasetBase):
         return gtbbs
 
     def get_depth(self, idx, rot=0, zoom=1.0):
+        print(self.depth_files[idx])
         depth_img = image.DepthImage.from_exr(self.depth_files[idx])
         center, left, top = self._get_crop_attrs(idx)
         depth_img.rotate(rot, center)
