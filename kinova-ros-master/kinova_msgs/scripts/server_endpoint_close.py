@@ -11,7 +11,7 @@ from kinova_msgs.msg import KinovaMoveitJoints, KinovaTrajectory
 from kinova_msgs.srv import MoverService
 from sensor_msgs.msg import Image, JointState
 from rosgraph_msgs.msg import Clock
-from std_msgs.msg import Float64,Float32
+from std_msgs.msg import Float64,Float32,Float64MultiArray
 def main():
     # Get variables set in rosparam used for
     # server/node communication
@@ -36,12 +36,13 @@ def main():
         #'kinova_moveit': RosService('kinova_moveit', MoverService)#key:ros service in ros for plan    RosService: service    The service name in ROS   service_class:  The service node in ros
         '/j2n6s300/joint_states': RosPublisher('/j2n6s300/joint_states',JointState, queue_size=10),
         '/clock': RosPublisher('/clock', Clock, queue_size=10),
-        '/j2n6s300/joint_1_position_controller/command': RosSubscriber('/j2n6s300/joint_1_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
-        '/j2n6s300/joint_2_position_controller/command': RosSubscriber('/j2n6s300/joint_2_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
-        '/j2n6s300/joint_3_position_controller/command': RosSubscriber('/j2n6s300/joint_3_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
-        '/j2n6s300/joint_4_position_controller/command': RosSubscriber('/j2n6s300/joint_4_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
-        '/j2n6s300/joint_5_position_controller/command': RosSubscriber('/j2n6s300/joint_5_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
-        '/j2n6s300/joint_6_position_controller/command': RosSubscriber('/j2n6s300/joint_6_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
+        '/j2n6s300/joint_group_position_controller/command': RosSubscriber('/j2n6s300/joint_group_position_controller/command', Float64MultiArray, unity_machine_ip, unity_machine_port, queue_size=10),
+        # '/j2n6s300/joint_1_position_controller/command': RosSubscriber('/j2n6s300/joint_1_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
+        # '/j2n6s300/joint_2_position_controller/command': RosSubscriber('/j2n6s300/joint_2_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
+        # '/j2n6s300/joint_3_position_controller/command': RosSubscriber('/j2n6s300/joint_3_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
+        # '/j2n6s300/joint_4_position_controller/command': RosSubscriber('/j2n6s300/joint_4_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
+        # '/j2n6s300/joint_5_position_controller/command': RosSubscriber('/j2n6s300/joint_5_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
+        # '/j2n6s300/joint_6_position_controller/command': RosSubscriber('/j2n6s300/joint_6_position_controller/command', Float64, unity_machine_ip, unity_machine_port, queue_size=10),
         '/j2n6s300/fingers': RosSubscriber('/j2n6s300/fingers', Float32, unity_machine_ip, unity_machine_port, queue_size=10),
     }
 

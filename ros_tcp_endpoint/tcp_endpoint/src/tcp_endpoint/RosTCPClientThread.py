@@ -113,7 +113,7 @@ class ClientThread(Thread):
         data = b''
 
         destination = self.read_string()
-        print("unity topic name:"+destination)
+        # print("unity topic name:"+destination)
         full_message_size = self.read_int32()
 
         while len(data) < full_message_size:

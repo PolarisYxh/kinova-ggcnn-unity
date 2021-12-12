@@ -17,7 +17,9 @@ from helpers.covariance import generate_cartesian_covariance
 from helpers.gripper_action_client import set_finger_positions
 from helpers.position_action_client import move_to_position
 from sensor_msgs.msg import Image, CameraInfo
+from sensor_msgs.msg import JointState
 from helpers.get_target import get_target
+import signal
 import time
 MAX_VELO_X = 0.1
 MAX_VELO_Y = 0.15
@@ -38,11 +40,34 @@ GRIP_WIDTH_MM = 70
 CURR_DEPTH = 350  # Depth measured from camera.
 
 SERVO = False
-
+fin1= 0
+fin2=0
 finger_unity_pub = rospy.Publisher('/j2n6s300/fingers', std_msgs.msg.Float32, queue_size=1)
-
 move2 = 0 #拉的动作
+# 自定义信号处理函数
+def end_handler(signum, frame):
+    global velo_unity_pub
+    CURRENT_VELOCITY = [0,0,0,0,0,0]
+    twist = geometry_msgs.msg.Twist(CURRENT_VELOCITY[0:3], CURRENT_VELOCITY[3:6])
+    twist.linear = geometry_msgs.msg.Vector3(CURRENT_VELOCITY[0], CURRENT_VELOCITY[1], CURRENT_VELOCITY[2])#0, 0, 0
+    twist.angular = geometry_msgs.msg.Vector3(CURRENT_VELOCITY[3], CURRENT_VELOCITY[4], CURRENT_VELOCITY[5])#0, 0, 0
+    i=0
+    while not rospy.is_shutdown():
+        tem = geometry_msgs.msg.TwistStamped()
+        tem.twist = twist
+        tem.header.stamp = rospy.Time.now()
+        velo_unity_pub.publish(tem)
+        print(twist)
+        i+=1
+        if i>100:
+            break
+    print("finish!")
+    quit()
 
+# 设置相应信号处理的handler
+signal.signal(signal.SIGINT, end_handler)
+signal.signal(signal.SIGHUP, end_handler)
+signal.signal(signal.SIGTERM, end_handler)
 
 class Averager():
     def __init__(self, inputs, time_steps):
@@ -182,29 +207,50 @@ def open_servo(av):
         CURRENT_VELOCITY[4] = 1 * dp #y: up and down rotate (positive is down)
         CURRENT_VELOCITY[5] = 1 * dyaw  #z: left and right rotate,positive is left
 
-
+def get_center(msg):
+    global fin1,fin2
+    fin1 = msg.position[6]
+    fin2 = msg.position[8]
 if __name__ == '__main__':
     rospy.init_node('kinova_velocity_control')
 
     velo_unity_pub = rospy.Publisher('/servo_server/delta_twist_cmds', geometry_msgs.msg.TwistStamped, queue_size=1)
     finger_pub = rospy.Publisher('/j2n6s300_driver/in/finger_velocity', kinova_msgs.msg.FingerPosition, queue_size=1)
     r = rospy.Rate(100)
+    # force servo node start. why？
+    CURRENT_VELOCITY = [0,0,0,0,0,0]
+    twist = geometry_msgs.msg.Twist(CURRENT_VELOCITY[0:3], CURRENT_VELOCITY[3:6])
+    twist.linear = geometry_msgs.msg.Vector3(CURRENT_VELOCITY[0], CURRENT_VELOCITY[1], CURRENT_VELOCITY[2])#0, 0, 0
+    twist.angular = geometry_msgs.msg.Vector3(CURRENT_VELOCITY[3], CURRENT_VELOCITY[4], CURRENT_VELOCITY[5])#0, 0, 0
 
+    i=0
+    while not rospy.is_shutdown():
+        tem = geometry_msgs.msg.TwistStamped()
+        tem.twist = twist
+        tem.header.stamp = rospy.Time.now()
+        velo_unity_pub.publish(tem)
+        i+=1
+        r.sleep()
+        if i>100:
+            break
+    x = std_msgs.msg.Float32()
+    x.data = 1   # 0为close, 1为open
+    finger_unity_pub.publish(x)
     SERVO = True
     ggcnn=get_target()
     cam2finger_center=np.array([0, 0.1, 0.187, 0, 0, np.pi])
-    move2 = 1
+    move2 = 0
     close_finger = 1
 
     depth_sub=None
+    r = rospy.Rate(150)
     if move2 == 0:
         ggcnn.pub = False
         depth_sub = rospy.Subscriber('/camera/depth/image_meters', Image, ggcnn.depth_callback, queue_size=1)
         d = ggcnn.get_pos() # x positive:down; y positive:left; z positive:forward; ang x:rotate up, ang y positive:rotate right,ang z positive: rotate
-        d = [-0.05, 0.45, 0.38, 0, 0, d[3]+np.pi-0.1749329]
-        # d = [0, 0, 0.55, 0, 0, np.pi-0.1749329]# for partnet_1bee7b073a38d30a4c3aee8e9d3a6ffa link_0
+        d = [d[0],d[1],d[2]+0.02,0,0,d[3]+np.pi-0.1749329] #if d is precise,use this line
+        # d = [0, 0, 0.56, 0, 0, np.pi-0.1749329]# for partnet_1bee7b073a38d30a4c3aee8e9d3a6ffa link_0
         av=get_target_3d(d)
-        # depth_sub.unregister()
     while not rospy.is_shutdown():
         if SERVO:
             if move2 == 0:#reach handle
@@ -229,6 +275,7 @@ if __name__ == '__main__':
             elif move2 == 1:    # draw
                 if close_finger:
                     #control fingers
+                    # depth_sub.unregister()
                     x = std_msgs.msg.Float32()
                     x.data = 0   # 0为close, 1为open
                     finger_unity_pub.publish(x)
@@ -240,25 +287,26 @@ if __name__ == '__main__':
                     time.sleep(2)
                     print('reach')
                     depth_sub = rospy.Subscriber('/camera/depth/image_meters', Image, ggcnn.eyeDepth2pointnormal, queue_size=1)
+                    center_sub = rospy.Subscriber('/j2n6s300/joint_states', JointState, get_center, queue_size=1)
                     close_finger = False
+                    orig_dir,orig_center = ggcnn.get_normal()
 
 
                 # d = np.array([0.02, -0.02, 0, 0, 0, 0])
                 dir,center = ggcnn.get_normal()
+                d = np.array([0, 0, -0.02, 0, 0, 0])+cam2finger_center#x positive: right, y positive:down,z positive: forward
                 if abs(dir[2])==1:
-                    d = np.array([0, 0, -0.02, 0, 0, 0])#x positive: right, y positive:down,z positive: forward
-                    if center[1]>320:
-                        d+=np.array([0.02, 0, 0, 0, 0, 0])
-                    elif center[1]<320:
-                        d+=np.array([-0.02, 0, 0, 0, 0, 0])
+                    if center[1]>orig_center[1]:
+                        d+=np.array([min(0.0002*(center[1]-orig_center[1]),0.1), 0, 0, 0, 0, 0])
+                    elif center[1]<orig_center[1]:
+                        d+=np.array([max(-0.0002*(orig_center[1]-center[1]),-0.1), 0, 0, 0, 0, 0])
                 elif abs(dir[0])>abs(dir[1]):
                     theta = np.arctan(dir[0]/dir[2])
-                    print(theta/np.pi*180)
-                    d = np.array([ 0, 0, 0,      0, -theta, 0])
+                    # print(theta/np.pi*180)
+                    d += np.array([ 0, 0, 0,      0, -theta, 0])
                 else:
                     theta = np.arctan(dir[1]/dir[2])
-                    d = np.array([0, 0,  0, -theta,      0, 0])
-                d = d+cam2finger_center
+                    d += np.array([0, 0,  0, -theta,      0, 0])
                 av=get_target_3d(d)
                 open_servo(av)
                 #control fingers
@@ -276,8 +324,10 @@ if __name__ == '__main__':
             twist.linear = geometry_msgs.msg.Vector3(CURRENT_VELOCITY[0], CURRENT_VELOCITY[1], CURRENT_VELOCITY[2])#0, 0, 0
             twist.angular = geometry_msgs.msg.Vector3(CURRENT_VELOCITY[3], CURRENT_VELOCITY[4], CURRENT_VELOCITY[5])#0, 0, 0
             tem = geometry_msgs.msg.TwistStamped()
+            tem.header.stamp = rospy.Time.now()
             tem.twist = twist
-            rospy.loginfo(tem.twist)
+            # rospy.loginfo(tem.twist)
+            rospy.Duration(secs=0.01)
             velo_unity_pub.publish(tem)
-
+            # r.sleep()
             CURRENT_VELOCITY = [0, 0, 0, 0, 0, 0]

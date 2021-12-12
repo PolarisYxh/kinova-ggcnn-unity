@@ -6,5 +6,8 @@ def get_network(network_name):
     elif network_name == 'ggcnn2':
         from .ggcnn2 import GGCNN2
         return GGCNN2
+    elif network_name == 'yggcnn':
+        from .yggcnn import YGGCNN
+        return YGGCNN
     else:
         raise NotImplementedError('Network {} is not implemented'.format(network_name))

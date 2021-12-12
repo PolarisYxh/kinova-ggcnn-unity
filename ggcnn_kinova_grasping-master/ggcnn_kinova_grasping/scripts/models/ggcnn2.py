@@ -44,7 +44,6 @@ class GGCNN2(nn.Module):
             nn.Conv2d(filter_sizes[3], filter_sizes[3], 3, padding=1),
             nn.ReLU(inplace=True),
         )
-
         self.pos_output = nn.Conv2d(filter_sizes[3], 1, kernel_size=1)
         self.cos_output = nn.Conv2d(filter_sizes[3], 1, kernel_size=1)
         self.sin_output = nn.Conv2d(filter_sizes[3], 1, kernel_size=1)

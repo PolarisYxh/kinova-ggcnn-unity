@@ -21,5 +21,6 @@
         "/home/yxh/Documents/catkin/devel/lib/python2.7/dist-packages",
         "/opt/ros/melodic/lib/python2.7/dist-packages"
     ],
-    "python.pythonPath": "/home/yxh/anaconda3/envs/taichi/bin/python"
+    "python.pythonPath": "/home/yxh/anaconda3/envs/taichi/bin/python",
+    "ros.distro": "melodic"
 }

@@ -4,7 +4,7 @@ from numpy.core.function_base import linspace
 import scipy.ndimage as ndimage
 from skimage.draw import circle,line
 import numpy as np
-
+import os
 # import pcl.pcl_visualization
 import matplotlib
 matplotlib.use('TkAgg')
@@ -62,8 +62,13 @@ def show_pcl(msg):
 def show_eye_img(msg):
     '''显示和保存真实深度图
     '''
+    # mask=cv2.inRange(msg,0.5,2)
+    # msg = msg*mask
+    m=np.max(msg)
+    msg[msg[:,:]==m]=0
     m=np.max(msg)
     pic=(msg)/(m)
+    pic[pic[:,:]==0]=1
     cv2.imshow("1",pic)
     cv2.waitKey()
     cv2.imwrite("result.png",pic*255)
@@ -171,9 +176,22 @@ def get_obb(rgb):
         width = rect[1][0]
         ang = 90-rect[2]
     show_contour(black_img,rect,contours)
-
+def crop(name):
+    img = cv2.imread(name)
+    img = img[300:700,110:930,:]
+    out = os.path.splitext(name)[0]+"_3.png"
+    cv2.imwrite(out,img)
 if __name__=="__main__":
-    img_msg=cv2.imread("scripts/temporary/depth_2698.exr",cv2.IMREAD_UNCHANGED)#depth_458.exr
+    # handle plt subplot's picture
+    # rootdir = 'scripts/temporary/pic'
+    # list = os.listdir(rootdir) #列出文件夹下所有的目录与文件
+    # for i in range(0,len(list)):
+    #     path = os.path.join(rootdir,list[i])
+    #     crop(path)
+
+    img_msg=cv2.imread("scripts/temporary/depth_18.exr",cv2.IMREAD_UNCHANGED)#depth_458.exr
+    img_msg = img_msg[:,:,2]
+    show_eye_img(img_msg)
     img_msg=cv2.imread("scripts/temporary/pcd0100d.tiff",cv2.IMREAD_UNCHANGED)
     # print(img_msg[200,270])
 

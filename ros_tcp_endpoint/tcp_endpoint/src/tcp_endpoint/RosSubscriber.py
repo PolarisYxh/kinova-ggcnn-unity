@@ -43,11 +43,11 @@ class RosSubscriber(RosReceiver):
         """
 
         serialized_message = ClientThread.serialize_message(self.topic, data)
-
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((self.tcp_id, self.tcp_port))
             s.send(serialized_message)
+            # print("ros pub topic name:"+self.topic)
             s.close()
         except Exception as e:
             rospy.loginfo("Exception {}".format(e))

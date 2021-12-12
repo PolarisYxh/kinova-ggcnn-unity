@@ -86,9 +86,9 @@ class get_target:
         cv2.waitKey()
         cv2.imwrite("result.png",pic*255)
     def get_normal(self):
-        self.get_normal_flag = True
-        # while 1:
-        #     if not self.get_normal_flag:
+        while 1:
+            if self.get_normal_flag:
+                break
         return self.dir,self.center
     def eyeDepth2normal_dir(self, depth_message):
         '''得到法线图,return -1~1
@@ -133,6 +133,10 @@ class get_target:
             # self.get_normal_flag=False
 
     def get_point(self, depth, x,y):
+        x=min(x,479)
+        y=min(y,639)
+        x=max(x,0)
+        y=max(y,0)
         dep=depth[x][y]
         px = -(y-self.cx)/self.fx*dep
         py = -(x-self.cy)/self.fy*dep
@@ -153,21 +157,24 @@ class get_target:
         return dir
     def eyeDepth2pointnormal(self, depth_message):
         # 采样得到图片的法线,还有优化空间：inRange直接得到surface平面轮廓
-        if self.get_normal_flag:
-            depth = self.bridge.imgmsg_to_cv2(depth_message)
-            black_img = np.zeros(depth.shape,np.uint8)
-            mask=cv2.inRange(depth, 0, 0.18)
-            # depth = depth*mask
-            # self.show_eye_img(depth)
-            contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)#find handle's outline
-            if len(contours)==0:
-                # 优化
-                # mask=cv2.inRange(depth, 0.18, 0.3)#find surface's outline
-                # contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-                # x,y,w,h     = cv2.boundingRect(contours[0])
-                self.dir=[0,0,1]
-                print("mission failed or error!")
-                return
+        depth = self.bridge.imgmsg_to_cv2(depth_message)
+        black_img = np.zeros(depth.shape,np.uint8)
+        mask=cv2.inRange(depth, 0, 0.19)
+        # depth = depth*mask
+        # self.show_eye_img(depth)
+        contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)#find handle's outline
+        if len(contours)==0:
+            # 优化
+            # mask=cv2.inRange(depth, 0.18, 0.5)#find surface's outline
+            # contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            # x,y,w,h     = cv2.boundingRect(contours[0])
+            # self.center = [y+h/2, x+w/2]
+
+            self.center = [240,320]
+            self.dir = self.get_point_normal(depth, self.center)
+
+            # print("mission failed or error!")
+        else:
             x,y,w,h     = cv2.boundingRect(contours[0])
             self.center = [y+h/2, x+w/2]
             center      = self.center
@@ -198,9 +205,9 @@ class get_target:
                 self.dir = [0,0,1]
             else:
                 self.dir = dir[idx]
-            # theta = np.arctan(self.dir[0]/self.dir[2])
-            # print(theta/np.pi*180)
-            # self.get_normal_flag = False
+        # theta = np.arctan(self.dir[0]/self.dir[2])
+        # print(theta/np.pi*180)
+        self.get_normal_flag = True
 
     def get_pos(self):
         self.get_flag = True
@@ -213,7 +220,10 @@ class get_target:
             print("into ggcnn!")
             with TimeIt('Crop'):
                 depth = self.bridge.imgmsg_to_cv2(depth_message)
-
+                # mask=cv2.inRange(depth,0,0.99)/255
+                # nums = np.sum(mask)
+                # depth = depth*mask
+                # depth[mask==0]=np.max(depth)
                 # Crop a square out of the middle of the depth and resize it to 300*300
                 crop_size = 400
                 depth_crop = cv2.resize(depth[(480-crop_size)//2:(480-crop_size)//2+crop_size, (640-crop_size)//2:(640-crop_size)//2+crop_size], (300, 300))
