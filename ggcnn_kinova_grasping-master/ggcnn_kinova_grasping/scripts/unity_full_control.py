@@ -287,7 +287,7 @@ if __name__ == '__main__':
                     time.sleep(2)
                     print('reach')
                     depth_sub = rospy.Subscriber('/camera/depth/image_meters', Image, ggcnn.eyeDepth2pointnormal, queue_size=1)
-                    center_sub = rospy.Subscriber('/j2n6s300/joint_states', JointState, get_center, queue_size=1)
+                    # center_sub = rospy.Subscriber('/j2n6s300/joint_states', JointState, get_center, queue_size=1)
                     close_finger = False
                     orig_dir,orig_center = ggcnn.get_normal()
 

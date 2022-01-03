@@ -171,7 +171,14 @@ class DepthImage(Image):
     @classmethod
     def from_exr(cls, fname):
         x=cv2.imread(fname, cv2.IMREAD_UNCHANGED)
-        return cls(x[:,:,2])
+        x=x[:,:,2]
+        mask = cv2.inRange(x,0,9.9)
+        mask = mask/255
+        nums=np.sum(mask)
+        x=x*mask
+        # d = np.sum(x)/nums
+        x[mask==0]=np.max(x)
+        return cls(x)
 
     def inpaint(self, missing_value=0):
         """

@@ -100,7 +100,7 @@ if __name__ == '__main__':
             if args.vis:
                 evaluation.plot_output(test_data.dataset.get_rgb(didx, rot, zoom, normalise=False),
                                        test_data.dataset.get_depth(didx, rot, zoom), q_img,
-                                       ang_img, no_grasps=args.n_grasps, grasp_width_img=width_img)
+                                       ang_img, no_grasps=args.n_grasps, grasp_width_img=width_img,idx=idx)
 
     if args.iou_eval:
         logging.info('IOU Results: %d/%d = %f' % (results['correct'],

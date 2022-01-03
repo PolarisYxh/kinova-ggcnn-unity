@@ -41,7 +41,7 @@ def parse_args():
 
     parser.add_argument('--batch-size', type=int, default=8, help='Batch size')
     parser.add_argument('--epochs', type=int, default=50, help='Training epochs')
-    parser.add_argument('--batches-per-epoch', type=int, default=1000, help='Batches per Epoch')
+    parser.add_argument('--batches-per-epoch', type=int, default=750, help='Batches per Epoch')
     parser.add_argument('--val-batches', type=int, default=250, help='Validation Batches')
 
     # Logging etc.
@@ -98,7 +98,7 @@ def validate(net, device, val_data, batches_per_epoch):
 
                 q_out, ang_out, w_out = post_process_output(lossd['pred']['pos'], lossd['pred']['cos'],
                                                             lossd['pred']['sin'], lossd['pred']['width'])
-
+                # evaluation.plot_output()
                 s = evaluation.calculate_iou_match(q_out, ang_out,
                                                    val_data.dataset.get_gtbb(didx, rot, zoom_factor),
                                                    no_grasps=1,
@@ -217,7 +217,7 @@ def run():
         shuffle=False,
         num_workers=args.num_workers
     )
-    logging.info('Done')
+    logging.info('Done') 
 
     # Load the network
     logging.info('Loading Network...')
@@ -230,7 +230,8 @@ def run():
     device = torch.device("cuda:0")
     
     # net = torch.load("./ggcnn_weights_cornell/ggcnn_epoch_23_cornell",map_location=device)
-    net = torch.load("./ggcnn2_weights_cornell/epoch_50_cornell",map_location=device)
+    # net = torch.load("output/models2/cnn3/epoch_50_iou_0.49",map_location=device)
+    net = torch.load("output/models2/211209_2216_/epoch_49_iou_0.22",map_location=device)
     # net = net.to(device)
     optimizer = optim.Adam(net.parameters())
     logging.info('Done')
@@ -242,9 +243,9 @@ def run():
     summary(net, (input_channels, 300, 300))
     sys.stdout = sys.__stdout__
     f.close()
-    
+    # torch.load(os.path.join(save_folder,"epoch_10_iou_0.00_statedict.pt"))
     best_iou = 0.0
-    for epoch in range(args.epochs):
+    for epoch in range(args.epochs+1):
         logging.info('Beginning Epoch {:02d}'.format(epoch))
         train_results = train(epoch, net, device, train_data, optimizer, args.batches_per_epoch, vis=args.vis)
 
@@ -270,7 +271,8 @@ def run():
         if iou > best_iou or epoch == 0 or (epoch % 10) == 0:
             torch.save(net, os.path.join(save_folder, 'epoch_%02d_iou_%0.2f' % (epoch, iou)))
             torch.save(net.state_dict(), os.path.join(save_folder, 'epoch_%02d_iou_%0.2f_statedict.pt' % (epoch, iou)))
-            best_iou = iou
+            if iou > best_iou:
+                best_iou = iou
 
 
 if __name__ == '__main__':

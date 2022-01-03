@@ -2,15 +2,89 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+class Residual_Block (nn.Module):
+    def __init__(self,i_channel,o_channel,kernel_size1,kernel_size2,stride=1,downsample=None):
+        super(Residual_Block,self).__init__()
+        self.conv1=nn.Conv2d(in_channels=i_channel,out_channels=o_channel,kernel_size=kernel_size1,stride=stride,padding=kernel_size1//2,bias=True)
+        # self.bn1=nn.BatchNorm2d(o_channel)
+        self.relu=nn.ReLU(inplace=True)
+        
+        self.conv2=nn.Conv2d(in_channels=o_channel,out_channels=o_channel,kernel_size=kernel_size2,stride=1,padding=kernel_size2//2,bias=True)
+        # self.bn2=nn.BatchNorm2d(o_channel)
+        self.downsample=downsample
+        
+    def forward(self,x):
+        residual=x
+        
+        out=self.conv1(x)
+        # out=self.bn1(out)
+        out=self.relu(out)
+        out=self.conv2(out)
+        # out=self.bn2(out)
+        
+        if self.downsample:
+            residual=self.downsample(x)
+        
+        out+=residual
+        out=self.relu(out)
+        
+        return out
+
+class stnNet(nn.Module):
+    def __init__(self):
+        super(stnNet, self).__init__()
+        self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
+        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
+        self.conv2_drop = nn.Dropout2d()
+        self.fc1 = nn.Linear(320, 50)
+        self.fc2 = nn.Linear(50, 10)
+
+        # Spatial transformer localization-network
+        self.localization = nn.Sequential(
+            nn.Conv2d(1, 8, kernel_size=7),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True),
+            nn.Conv2d(8, 10, kernel_size=5),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True)
+        )
+
+        # Regressor for the 3 * 2 affine matrix
+        self.fc_loc = nn.Sequential(
+            nn.Linear(100820, 32),
+            nn.ReLU(True),
+            nn.Linear(32, 2* 3 * 2)
+        )
+
+        # Initialize the weights/bias with identity transformation
+        self.fc_loc[2].weight.data.zero_()
+        self.fc_loc[2].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0,1, 0, 0, 0, 1, 0], dtype=torch.float))
+
+    # Spatial transformer network forward function
+    def stn(self, x):
+        xs = self.localization(x)
+        xs = xs.view(-1, 100820)
+        theta = self.fc_loc(xs)
+        theta = theta.view(2, 2, 3)
+
+        grid = F.affine_grid(theta, x.size())
+        x = F.grid_sample(x, grid)
+
+        return x
+
+    def forward(self, x):
+        # transform the input
+        x = self.stn(x)
+        return x
 
 class YGGCNN(nn.Module):
-    def __init__(self, input_channels=1, filter_sizes=None, l3_k_size=5, dilations=None):
+    def __init__(self, input_channels=1, filter_sizes=None, l3_k_size=3, dilations=None):
         super().__init__()
 
         if filter_sizes is None:
             filter_sizes = [16,  # First set of convs
-                            16,  # Second set of convs
-                            32,  # Dilated convs
+                            32,  # Second set of convs
+                            48,  # Dilated convs
                             16]  # Transpose Convs
 
         if dilations is None:
@@ -18,9 +92,7 @@ class YGGCNN(nn.Module):
 
         self.features = nn.Sequential(
             # 4 conv layers.
-            nn.Conv2d(input_channels, filter_sizes[0], kernel_size=7, stride=1, padding=3, bias=True),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(input_channels, filter_sizes[0], kernel_size=7, stride=1, padding=3, bias=True),
+            nn.Conv2d(input_channels, filter_sizes[0], kernel_size=11, stride=1, padding=5, bias=True),
             nn.ReLU(inplace=True),
             nn.Conv2d(filter_sizes[0], filter_sizes[0], kernel_size=5, stride=1, padding=2, bias=True),
             nn.ReLU(inplace=True),
@@ -33,9 +105,9 @@ class YGGCNN(nn.Module):
             nn.MaxPool2d(kernel_size=2, stride=2),
 
             # Dilated convolutions.
-            nn.Conv2d(filter_sizes[1], filter_sizes[2], kernel_size=l3_k_size, dilation=dilations[0], stride=1, padding=(l3_k_size//2 * dilations[0]), bias=True),
+            nn.Conv2d(filter_sizes[1], filter_sizes[2], kernel_size=l3_k_size,  stride=1, padding=1, bias=True),
             nn.ReLU(inplace=True),
-            nn.Conv2d(filter_sizes[2], filter_sizes[2], kernel_size=l3_k_size, dilation=dilations[1], stride=1, padding=(l3_k_size//2 * dilations[1]), bias=True),
+            nn.Conv2d(filter_sizes[2], filter_sizes[2], kernel_size=l3_k_size, stride=1, padding=1, bias=True),
             nn.ReLU(inplace=True),
 
             # Output layers

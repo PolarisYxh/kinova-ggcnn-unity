@@ -29,14 +29,20 @@ class yxhDataset(GraspDatasetBase):
         if ds_rotate:
             graspf = graspf[int(l*ds_rotate):] + graspf[:int(l*ds_rotate)]
         depthf = []
+        rgbf=[]
         for x in graspf:
             y = glob.glob(os.path.join(os.path.split(os.path.split(x)[0])[0],'DEPTH*'))
             y=y[0]+"/depth_"+os.path.basename(x)[4:-4]+".exr"
             depthf.append(y)
+        for x in graspf:
+            y = glob.glob(os.path.join(os.path.split(os.path.split(x)[0])[0],'RGB*'))
+            y=y[0]+"/rgb_"+os.path.basename(x)[4:-4]+".png"
+            rgbf.append(y)
         # rgbf = [f.replace('perfect_depth.tiff', 'RGB.png') for f in depthf]
 
         self.grasp_files = graspf[int(l*start):int(l*end)]
         self.depth_files = depthf[int(l*start):int(l*end)]
+        self.rgb_files = rgbf[int(l*start):int(l*end)]
         # self.rgb_files = rgbf[int(l*start):int(l*end)]
 
     def _get_crop_attrs(self, idx):
@@ -51,16 +57,17 @@ class yxhDataset(GraspDatasetBase):
         center, left, top = self._get_crop_attrs(idx)
         gtbbs.rotate(rot, center)
         gtbbs.offset((-top, -left))
+        zoom = 0.5
         gtbbs.zoom(zoom, (self.output_size//2, self.output_size//2))
         return gtbbs
 
     def get_depth(self, idx, rot=0, zoom=1.0):
-        print(self.depth_files[idx])
         depth_img = image.DepthImage.from_exr(self.depth_files[idx])
         center, left, top = self._get_crop_attrs(idx)
         depth_img.rotate(rot, center)
         depth_img.crop((top, left), (min(480, top + self.output_size), min(640, left + self.output_size)))
         depth_img.normalise()
+        zoom = 0.5
         depth_img.zoom(zoom)
         depth_img.resize((self.output_size, self.output_size))
         return depth_img.img
@@ -70,6 +77,7 @@ class yxhDataset(GraspDatasetBase):
         center, left, top = self._get_crop_attrs(idx)
         rgb_img.rotate(rot, center)
         rgb_img.crop((top, left), (min(480, top + self.output_size), min(640, left + self.output_size)))
+        zoom = 0.5
         rgb_img.zoom(zoom)
         rgb_img.resize((self.output_size, self.output_size))
         if normalise:

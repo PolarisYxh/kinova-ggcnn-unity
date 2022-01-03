@@ -56,9 +56,9 @@ class GraspDatasetBase(torch.utils.data.Dataset):
             rot = 0.0
 
         if self.random_zoom:
-            zoom_factor = np.random.uniform(0.5, 1.0)
+            zoom_factor = np.random.uniform(0.2, 0.7)
         else:
-            zoom_factor = 1.0
+            zoom_factor = 1
 
         # Load the depth image
         if self.include_depth:
